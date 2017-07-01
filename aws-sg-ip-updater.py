@@ -22,14 +22,11 @@ def get_current_ip():
     ip = r.json()['ip']
     current_ip = ip + '/32'
 
-def add_ip(current_ip):
+def add_ip(client, current_ip):
     """Add current IP to the security group"""
     global sg_id
     global port
     global protocol
-
-    # setup client for ec2
-    client = boto3.client("ec2")
 
     # execute security group ingress Boto3 commands
     # TODO: Add in try for graceful error handling
@@ -95,10 +92,16 @@ def main():
         else:
             assert False, "Unhandled Option"
 
+    session = boto3.Session(profile_name=profile)
+    # Any clients created from this session will use credentials
+    # from the [dev] section of ~/.aws/credentials.
+    # setup client for ec2
+    client = session.client("ec2")
+
     # get current public ip
     get_current_ip()
     # add current ip to the security group
-    add_ip(current_ip)
+    add_ip(client, current_ip)
 
 if __name__ == "__main__":
     main()
